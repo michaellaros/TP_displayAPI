@@ -1,8 +1,32 @@
-﻿namespace DisplayOrder.Controllers
+﻿using DisplayOrder.Models;
+using DisplayOrder.Interfaces;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DisplayOrder.Controllers
 {
-    public class DisplayOrderController
+    [Route("[controller]")]
+    [ApiController]
+    public class DisplayOrderController : Controller
     {
-        [Route("[controller]")]
-        [ApiController]
+        IDatabaseService _database;
+        public DisplayOrderController(IConfiguration configuration, IDatabaseService database)
+        {
+            _database = database;
+        }
+
+        [HttpGet]
+        [Route("Orders")]
+        [ActionName("GetOrders")]
+        public IActionResult GetOrders()
+        {
+            try
+            {
+                return Ok(_database.GetOrdersDB());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
