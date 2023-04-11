@@ -1,6 +1,8 @@
 ﻿using DisplayOrder.Interfaces;
 using System.Data.SqlClient;
 using DisplayOrder.Models;
+using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace DisplayOrder.Services
 {
@@ -13,19 +15,23 @@ namespace DisplayOrder.Services
             con=new SqlConnection(configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
             con.Open();
         }
-        public List<OrderModel> GetCategories(string language)
+        public List<OrderModel> GetOrdersDB()
         {
-            // sei arrivato     QUIIIIIII
+            List<ItemModel> items = new List<ItemModel>();
+            List<ItemModel> options = new List<ItemModel>();
+            options.Add(new ItemModel("patatine", 2));
+            items.Add(new ItemModel("hamburger",3,options));
+            string test = JsonConvert.SerializeObject(items);
+            Console.WriteLine(test);
+            
+
+            
             List<OrderModel> result = new List<OrderModel>();
-            string query = @$"select distinct c.id,isnull(rct.[Value],c.[Name]) as Name,c.ImagePath from RestaurantCategory c
-	                        join dbo.RestaurantCategoryTimespan ct  
-		                        on ct.Category_id = c.ID 
-		                        and ct.Flg_deleted = 0 
-		                        and DATEPART( HOUR,GETDATE()) between ct.Available_from
-                                and ct.Available_To-1
-		                    left join RestaurantCategoryTranslation rct on c.ID = rct.ID
-			                    and rct.Field='Name'
-			                    and rct.[Language] = '{language}'";
+            string query = @$"SELECT 
+                            [Json_Order]
+                            ,[Order_Number]
+                            ,[Order_Status]
+                            FROM [TPDisplayDB].[dbo].[Diplay_Order]";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
             {
@@ -39,10 +45,47 @@ namespace DisplayOrder.Services
 
                     while (reader.Read())
                     {
-                        result.Add(new OrderModel(int.Parse(reader["id"].ToString()!),
-                                                     reader["name"].ToString()!,
-                                                     reader["ImagePath"].ToString()!
-                            ));
+
+                        result.Add(new OrderModel(int.Parse(reader["Order_Number"].ToString()),
+                            JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
+                            ,int.Parse(reader["Order_Status"].ToString()
+                            )));
+                    }
+                }
+            }
+            return result;
+        }
+
+        public List<OrderModel> PostOrdersDB(List<ItemModel> items)
+        {
+            
+
+
+
+            List<OrderModel> result = new List<OrderModel>();
+            string query = @$"INSERT INTO [dbo].[Diplay_Order](
+                                [Json_Order]
+                                ,[Order_Number],
+		                        [Order_Status])
+                                SELECT '{JsonConvert.SerializeObject(items)}', NEXT VALUE For [dbo].[Display_OrderSequence],1";
+            using (SqlCommand cmd = new SqlCommand(query, con))
+
+            {
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (!reader.HasRows)
+                    {
+                        return null;
+                    }
+
+                    while (reader.Read())
+                    {
+
+                            result.Add(new OrderModel(int.Parse(reader["Order_Number"].ToString()),
+                            JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
+                            , int.Parse(reader["Order_Status"].ToString()
+                            )));
                     }
                 }
             }

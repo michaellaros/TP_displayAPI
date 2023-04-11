@@ -28,5 +28,20 @@ namespace DisplayOrder.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost]
+        [Route("Orders")]
+        [ActionName("PostOrders")]
+        public IActionResult PostOrders(List<ItemModel> items)
+        {
+            try
+            {
+                return Ok(_database.PostOrdersDB(items));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
