@@ -90,7 +90,7 @@ namespace DisplayOrder.Services
 
             List<OrderModel> result = new List<OrderModel>();
             string query = @$"INSERT INTO [dbo].[Diplay_Order](
-                                [order_id],
+                                
                                 [Json_Order]
                                 ,[Order_Number],
 		                        [order_status])
