@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using DisplayOrder.Models;
 using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Data;
 
 namespace DisplayOrder.Services
 {
@@ -18,28 +19,15 @@ namespace DisplayOrder.Services
 
         public OrderModel UpdateOrderDB(UpdateRequestModel update)
         {
-
             string query = @$"UPDATE [dbo].[Diplay_Order]
                                  SET 
-                                    [order_status] = {update.order_status}
+                                    [order_status] = {update.order_status},
+                                    [Update_date] = GetDate()
                                     WHERE [order_id] = {update.order_id}";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
             {
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (!reader.HasRows)
-                    {
-                        return null;
-                    }
-
-                    while (reader.Read())
-                    {
-
-                        
-                    }
-                }
+                cmd.ExecuteNonQuery();
             }
             return null;
         }
@@ -55,6 +43,7 @@ namespace DisplayOrder.Services
                             ,[Json_Order]
                             ,[Order_Number]
                             ,[order_status]
+                            ,[Insert_date]   
                             FROM [TPDisplayDB].[dbo].[Diplay_Order]";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
@@ -71,10 +60,10 @@ namespace DisplayOrder.Services
                     {
 
                         result.Add(new OrderModel((reader["order_id"].ToString())
-                            ,int.Parse(reader["Order_Number"].ToString()),
+                            , int.Parse(reader["Order_Number"].ToString()),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
-                            ,int.Parse(reader["order_status"].ToString()
-                            )));
+                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy hh:mm:ss")
+                            )) ;
                     }
                 }
             }
@@ -98,26 +87,9 @@ namespace DisplayOrder.Services
             using (SqlCommand cmd = new SqlCommand(query, con))
 
             {
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (!reader.HasRows)
-                    {
-                        return null;
-                    }
-
-                    while (reader.Read())
-                    {
-
-                            result.Add(new OrderModel((reader["order_id"].ToString())
-                            , int.Parse(reader["Order_Number"].ToString()),
-                            JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
-                            , int.Parse(reader["order_status"].ToString()
-                            )));
-                    }
-                }
+                cmd.ExecuteNonQuery();
             }
-            return result;
+            return null;
         }
     }
 }
