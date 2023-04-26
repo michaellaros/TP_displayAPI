@@ -1,5 +1,6 @@
 using DisplayOrder.Interfaces;
 using DisplayOrder.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +11,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IDatabaseService, DatabaseService>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

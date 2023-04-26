@@ -62,7 +62,7 @@ namespace DisplayOrder.Services
                         result.Add(new OrderModel((reader["order_id"].ToString())
                             , int.Parse(reader["Order_Number"].ToString()),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
-                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy hh:mm:ss")
+                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss")
                             )) ;
                     }
                 }
