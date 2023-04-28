@@ -6,7 +6,7 @@ namespace DisplayOrder.Interfaces
     {
         
         List<OrderModel> GetOrdersDB();
-        List<OrderModel> PostOrdersDB(List<ItemModel> items);
+        int PostOrdersDB(List<ItemModel> items);
         OrderModel UpdateOrderDB(UpdateRequestModel update);
         
     }

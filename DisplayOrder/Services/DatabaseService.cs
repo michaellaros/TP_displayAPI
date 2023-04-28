@@ -71,25 +71,42 @@ namespace DisplayOrder.Services
         }
 
         
-        public List<OrderModel> PostOrdersDB(List<ItemModel> items)
+        public int PostOrdersDB(List<ItemModel> items)
         {
-            
+            int result;
+            string query1 = @$"SELECT NEXT VALUE For [dbo].[Display_OrderSequence] as OrderNumberKiosk";
+            string query2;
+            using (SqlCommand cmd = new SqlCommand(query1, con))
 
+            {
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (!reader.HasRows)
+                    {
+                        
+                    }
 
+                    if (reader.Read())
+                    {
 
-            List<OrderModel> result = new List<OrderModel>();
-            string query = @$"INSERT INTO [dbo].[Diplay_Order](
+                        result = int.Parse(reader["OrderNumberKiosk"].ToString());
+                        query2 = @$"INSERT INTO [dbo].[Diplay_Order](
                                 
                                 [Json_Order]
                                 ,[Order_Number],
 		                        [order_status])
-                                SELECT '{JsonConvert.SerializeObject(items)}', NEXT VALUE For [dbo].[Display_OrderSequence],1";
-            using (SqlCommand cmd = new SqlCommand(query, con))
+                                SELECT '{JsonConvert.SerializeObject(items)}', {result},1";
 
-            {
+                    }
+                    else throw new ArgumentException();
+
+                }
+
+                cmd.CommandText = query2;
                 cmd.ExecuteNonQuery();
+
             }
-            return null;
+            return result;
         }
     }
 }
