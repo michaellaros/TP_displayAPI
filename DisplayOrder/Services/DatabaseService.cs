@@ -48,7 +48,8 @@ namespace DisplayOrder.Services
                             ,[Json_Order]
                             ,[Order_Number]
                             ,[order_status]
-                            , D.[Insert_date] 
+                            ,D.[insert_date]
+                            , DATEDIFF(second,D.[insert_date],GETDATE()) as result_Date
 							,C.[Img] 
                             FROM [TPDisplayDB].[dbo].[Diplay_Order] D
  
@@ -71,7 +72,7 @@ namespace DisplayOrder.Services
                         result.Add(new OrderModel((reader["order_id"].ToString())
                             , int.Parse(reader["Order_Number"].ToString()),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
-                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"), reader["Img"].ToString()
+                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"),int.Parse(reader["result_Date"].ToString()), reader["Img"].ToString()
                             )) ;
                     }
                 }
