@@ -4,21 +4,24 @@ using DisplayOrder.Models;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Data;
+using Microsoft.Extensions.Configuration;
 
 namespace DisplayOrder.Services
 {
     public class DatabaseService :IDatabaseService
     {
         private SqlConnection con { get; set; }
-
+        private IConfiguration _configuration { get; set; }
         public DatabaseService(IConfiguration configuration)
         {
-            con=new SqlConnection(configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
-            con.Open();
+            _configuration = configuration;
         }
 
         public OrderModel UpdateOrderDB(UpdateRequestModel update)
         {
+            con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
+
+            con.Open();
             string query = @$"UPDATE [dbo].[Diplay_Order]
                                  SET 
                                     [order_status] = {update.order_status},
@@ -29,21 +32,24 @@ namespace DisplayOrder.Services
             {
                 cmd.ExecuteNonQuery();
             }
+            con.Close();
             return null;
         }
        public List<OrderModel> GetOrdersDB()
         {
-            
-            
 
-            
+
+            con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
+
+            con.Open();
             List<OrderModel> result = new List<OrderModel>();
             string query = @$"SELECT 
                              [order_id]
                             ,[Json_Order]
                             ,[Order_Number]
                             ,[order_status]
-                            ,[Insert_date]   
+                            ,[Insert_date]
+                            ,[Cod_Consumation]
                             FROM [TPDisplayDB].[dbo].[Diplay_Order]";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
@@ -62,17 +68,20 @@ namespace DisplayOrder.Services
                         result.Add(new OrderModel((reader["order_id"].ToString())
                             , int.Parse(reader["Order_Number"].ToString()),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
-                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss")
+                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"), reader["cod_Consumation"].ToString()
                             )) ;
                     }
                 }
             }
+            con.Close();
             return result;
         }
 
         
-        public int PostOrdersDB(List<ItemModel> items)
+        public int PostOrdersDB(POST_OrderModel order)
         {
+            con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
+            con.Open();
             int result;
             string query1 = @$"SELECT NEXT VALUE For [dbo].[Display_OrderSequence] as OrderNumberKiosk";
             string query2;
@@ -92,10 +101,11 @@ namespace DisplayOrder.Services
                         result = int.Parse(reader["OrderNumberKiosk"].ToString());
                         query2 = @$"INSERT INTO [dbo].[Diplay_Order](
                                 
-                                [Json_Order]
-                                ,[Order_Number],
-		                        [order_status])
-                                SELECT '{JsonConvert.SerializeObject(items)}', {result},1";
+                                [Json_Order],
+                                [Order_Number],
+		                        [order_status],
+                                [Cod_Consumation])
+                                SELECT '{JsonConvert.SerializeObject(order.order)}', {result},1,'{order.Cod_Consumation}'";
 
                     }
                     else throw new ArgumentException();
@@ -106,6 +116,7 @@ namespace DisplayOrder.Services
                 cmd.ExecuteNonQuery();
 
             }
+            con.Close();
             return result;
         }
     }

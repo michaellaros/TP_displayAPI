@@ -1,6 +1,8 @@
 ﻿using DisplayOrder.Models;
 using DisplayOrder.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace DisplayOrder.Controllers
 {
@@ -8,8 +10,8 @@ namespace DisplayOrder.Controllers
     [ApiController]
     public class DisplayOrderController : Controller
     {
-        IDatabaseService _database;
-        public DisplayOrderController(IConfiguration configuration, IDatabaseService database)
+        private readonly IDatabaseService _database;
+        public DisplayOrderController(IDatabaseService database)
         {
             _database = database;
         }
@@ -32,11 +34,11 @@ namespace DisplayOrder.Controllers
         [HttpPost]
         [Route("PostOrders")]
         [ActionName("PostOrders")]
-        public IActionResult PostOrders(List<ItemModel> items)
+        public IActionResult PostOrders(POST_OrderModel order)
         {
             try
             {
-                return Ok(_database.PostOrdersDB(items));
+                return Ok(_database.PostOrdersDB(order));
             }
             catch (Exception ex)
             {
