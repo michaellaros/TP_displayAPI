@@ -13,16 +13,16 @@ namespace DisplayOrder.Models
         [JsonIgnore]
         public string Insert_date { get; set; }
         public string date { get{ return Insert_date; } }
-        public string Cod_Consumation { get; set; }
+        public string consumation_img { get; set; }
 
 
-        public OrderModel(string order_id, int orderNumber, List<ItemModel> items, int order_status, string Insert_date, string Cod_Consumation) {
+        public OrderModel(string order_id, int orderNumber, List<ItemModel> items, int order_status, string Insert_date, string consumation_img) {
             this.order_id = order_id;
             this.orderNumber = orderNumber;
             this.items =  items;
             this.order_status = order_status;
             this.Insert_date = Insert_date;
-            this.Cod_Consumation =Cod_Consumation;
+            this.consumation_img = consumation_img;
 
         }
     }

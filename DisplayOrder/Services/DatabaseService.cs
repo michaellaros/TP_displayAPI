@@ -48,9 +48,12 @@ namespace DisplayOrder.Services
                             ,[Json_Order]
                             ,[Order_Number]
                             ,[order_status]
-                            ,[Insert_date]
-                            ,[Cod_Consumation]
-                            FROM [TPDisplayDB].[dbo].[Diplay_Order]";
+                            , D.[Insert_date] 
+							,C.[Img] 
+                            FROM [TPDisplayDB].[dbo].[Diplay_Order] D
+ 
+                            JOIN [dbo].[Tip_ConsumationType] C on 
+                            D.Cod_Consumation = C.Cod_Consumation";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
             {
@@ -68,7 +71,7 @@ namespace DisplayOrder.Services
                         result.Add(new OrderModel((reader["order_id"].ToString())
                             , int.Parse(reader["Order_Number"].ToString()),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
-                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"), reader["cod_Consumation"].ToString()
+                            , int.Parse(reader["order_status"].ToString()), reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"), reader["Img"].ToString()
                             )) ;
                     }
                 }
