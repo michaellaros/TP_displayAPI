@@ -42,18 +42,20 @@ namespace DisplayOrder.Services
             con.Open();
             List<OrderModel> result = new List<OrderModel>();
             string query = @$"SELECT 
-                             [order_id]
-                            ,[Json_Order]
-                            ,[Order_Number]
-                            ,[order_status]
-                            ,D.[insert_date]
-                            , (DATEDIFF(second,D.[insert_date],GETDATE())/60) as result_DateMinutes
-							,(DATEDIFF(second,D.[insert_date],GETDATE())%60) as result_DateSeconds
-							,C.[Img] 
-                            FROM [TPDisplayDB].[dbo].[Diplay_Order] D
- 
-                            JOIN [dbo].[Tip_ConsumationType] C on 
-                            D.Cod_Consumation = C.Cod_Consumation";
+                            [order_id],
+                            [Json_Order],
+                            [Order_Number],
+                            [order_status],
+                            D.[insert_date],
+                            (DATEDIFF(second, D.[insert_date], GETDATE()) / 60) as result_DateMinutes,
+                            (DATEDIFF(second, D.[insert_date], GETDATE()) % 60) as result_DateSeconds,
+                            C.[Img] 
+                            FROM 
+                            [TPDisplayDB].[dbo].[Diplay_Order] D
+                            JOIN 
+                            [dbo].[Tip_ConsumationType] C ON D.Cod_Consumation = C.Cod_Consumation
+                            WHERE 
+                            CONVERT(date, D.[insert_date]) = CONVERT(date, GETDATE());";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
             {
