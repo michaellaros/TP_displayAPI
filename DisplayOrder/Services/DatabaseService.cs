@@ -2,13 +2,11 @@
 using System.Data.SqlClient;
 using DisplayOrder.Models;
 using Newtonsoft.Json;
-using System.Diagnostics;
 using System.Data;
-using Microsoft.Extensions.Configuration;
 
 namespace DisplayOrder.Services
 {
-    public class DatabaseService :IDatabaseService
+    public class DatabaseService : IDatabaseService
     {
         private SqlConnection con { get; set; }
         private IConfiguration _configuration { get; set; }
@@ -35,7 +33,7 @@ namespace DisplayOrder.Services
             con.Close();
             return null;
         }
-       public List<OrderModel> GetOrdersDB()
+        public List<OrderModel> GetOrdersDB()
         {
 
 
@@ -70,12 +68,12 @@ namespace DisplayOrder.Services
                     while (reader.Read())
                     {
 
-                        result.Add(new OrderModel((reader["order_id"].ToString())
+                        result.Add(new OrderModel(reader["order_id"].ToString()
                             , int.Parse(reader["Order_Number"].ToString()),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
                             , int.Parse(reader["order_status"].ToString()),
-                            reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"),int.Parse(reader["result_DateMinutes"].ToString()), int.Parse(reader["result_DateSeconds"].ToString()), reader["Img"].ToString()
-                            )) ;
+                            reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"), int.Parse(reader["result_DateMinutes"].ToString()), int.Parse(reader["result_DateSeconds"].ToString()), reader["Img"].ToString()
+                            ));
                     }
                 }
             }
@@ -83,7 +81,7 @@ namespace DisplayOrder.Services
             return result;
         }
 
-        
+
         public int PostOrdersDB(POST_OrderModel order)
         {
             con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
@@ -98,7 +96,7 @@ namespace DisplayOrder.Services
                 {
                     if (!reader.HasRows)
                     {
-                        
+
                     }
 
                     if (reader.Read())
@@ -111,11 +109,13 @@ namespace DisplayOrder.Services
                                 [Order_Number],
 		                        [order_status],
                                 [Cod_Consumation])
-                                SELECT '{JsonConvert.SerializeObject(order.order)}', {result},1,'{order.Cod_Consumation}'";
+                                SELECT N'{JsonConvert.SerializeObject(order.order)}', {result},1,'{order.Cod_Consumation}'";
 
                     }
-                    else throw new ArgumentException();
-
+                    else
+                    {
+                        throw new ArgumentException();
+                    }
                 }
 
                 cmd.CommandText = query2;
