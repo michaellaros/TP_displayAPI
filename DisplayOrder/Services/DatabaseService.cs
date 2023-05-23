@@ -33,7 +33,7 @@ namespace DisplayOrder.Services
             con.Close();
             return null;
         }
-        public List<OrderModel> GetOrdersDB()
+        public List<OrderModel> GetOrdersDB(string language)
         {
 
 
@@ -64,12 +64,12 @@ namespace DisplayOrder.Services
                 {
                     if (!reader.HasRows)
                     {
+                        con.Close();
                         return null;
                     }
 
                     while (reader.Read())
                     {
-
                         result.Add(new OrderModel(reader["order_id"].ToString()
                             , int.Parse(reader["Order_Number"].ToString()),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
@@ -78,6 +78,45 @@ namespace DisplayOrder.Services
                             ));
                     }
                 }
+
+                List<string> itemIds = new List<string>();
+                result.ForEach(order =>
+                {
+                    order.items.ForEach(item =>
+                    {
+
+                        itemIds.Add(item.id.ToString());
+
+                    });
+                });
+                cmd.CommandText = $@"select i.id,isnull(it.Value,i.Name) name
+                            from [TPKioskDB].dbo.RestaurantItem i
+                            left join [TPKioskDB].dbo.RestaurantItemTranslation it on i.ID = it.ID_Item
+	                            and it.Language = '{language}' and it.Field ='Name' 
+                            where i.ID in({string.Join(",", itemIds)})";
+
+                Dictionary<string, string> map = new Dictionary<string, string>();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+
+
+                    while (reader.Read())
+                    {
+                        map.Add(reader["id"].ToString(), reader["name"].ToString());
+                    }
+                }
+                result.ForEach(order =>
+                {
+                    order.items.ForEach(item =>
+                    {
+                        if (map.ContainsKey(item.id.ToString()))
+                        {
+                            item.name = map[item.id.ToString()];
+                        }
+                    });
+                });
+
             }
             con.Close();
             return result;
@@ -116,6 +155,7 @@ namespace DisplayOrder.Services
                     }
                     else
                     {
+
                         throw new ArgumentException();
                     }
                 }

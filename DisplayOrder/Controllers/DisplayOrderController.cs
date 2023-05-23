@@ -1,8 +1,6 @@
 ﻿using DisplayOrder.Models;
 using DisplayOrder.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
 
 namespace DisplayOrder.Controllers
 {
@@ -19,11 +17,11 @@ namespace DisplayOrder.Controllers
         [HttpGet]
         [Route("GetOrders")]
         [ActionName("GetOrders")]
-        public IActionResult GetOrders()
+        public IActionResult GetOrders(string language)
         {
             try
             {
-                return Ok(_database.GetOrdersDB());
+                return Ok(_database.GetOrdersDB(language));
             }
             catch (Exception ex)
             {
@@ -49,12 +47,12 @@ namespace DisplayOrder.Controllers
         [HttpPost]
         [Route("UpdateOrder")]
         [ActionName("UpdateOrders")]
-        public IActionResult UpdateOrder(UpdateRequestModel update)
+        public IActionResult UpdateOrder(UpdateRequestModel update, string language)
         {
             try
             {
                 _database.UpdateOrderDB(update);
-                return Ok(_database.GetOrdersDB());
+                return Ok(_database.GetOrdersDB(language));
             }
             catch (Exception ex)
             {
