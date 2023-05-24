@@ -86,6 +86,7 @@ namespace DisplayOrder.Services
                     {
 
                         itemIds.Add(item.id.ToString());
+                        item.option.ForEach(option => itemIds.Add(option.id.ToString()));
 
                     });
                 });
@@ -114,6 +115,13 @@ namespace DisplayOrder.Services
                         {
                             item.name = map[item.id.ToString()];
                         }
+                        item.option.ForEach(option =>
+                        {
+                            if (map.ContainsKey(option.id.ToString()))
+                            {
+                                option.name = map[option.id.ToString()];
+                            }
+                        });
                     });
                 });
 
