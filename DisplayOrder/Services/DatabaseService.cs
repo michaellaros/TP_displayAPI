@@ -55,7 +55,7 @@ namespace DisplayOrder.Services
                             JOIN 
                             [dbo].[Tip_ConsumationType] C ON D.Cod_Consumation = C.Cod_Consumation
                             WHERE 
-                            CONVERT(date, D.[insert_date]) = CONVERT(date, GETDATE());";
+                            CONVERT(date, D.[insert_date]) = CONVERT(date, GETDATE()) AND D.[order_status] < 4";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
             {
