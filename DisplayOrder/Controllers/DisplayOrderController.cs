@@ -51,7 +51,7 @@ namespace DisplayOrder.Controllers
         {
             try
             {
-                _database.UpdateOrderDB(update);
+                _database.UpdateOrderDB(update,language);
                 return Ok(_database.GetOrdersDB(language));
             }
             catch (Exception ex)

@@ -15,7 +15,7 @@ namespace DisplayOrder.Services
             _configuration = configuration;
         }
 
-        public OrderModel UpdateOrderDB(UpdateRequestModel update)
+        public OrderModel UpdateOrderDB(UpdateRequestModel update, string language)
         {
             con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
 
@@ -130,8 +130,8 @@ namespace DisplayOrder.Services
             return result;
         }
 
-
-        public int PostOrdersDB(POST_OrderModel order)
+        
+        public int PostOrdersDB(POST_OrderModel order)  // funzione chiamata dal chiosco per scrivere gli ordini sul db del display
         {
             con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
             con.Open();

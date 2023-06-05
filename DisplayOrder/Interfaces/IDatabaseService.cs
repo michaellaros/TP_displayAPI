@@ -7,7 +7,7 @@ namespace DisplayOrder.Interfaces
 
         List<OrderModel> GetOrdersDB(string language);
         int PostOrdersDB(POST_OrderModel order);
-        OrderModel UpdateOrderDB(UpdateRequestModel update);
+        OrderModel UpdateOrderDB(UpdateRequestModel update,string language);
 
     }
 }
