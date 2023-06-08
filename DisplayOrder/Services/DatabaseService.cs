@@ -51,7 +51,7 @@ namespace DisplayOrder.Services
                             (DATEDIFF(second, D.[insert_date], GETDATE()) % 60) as result_DateSeconds,
                             C.[Img] 
                             FROM 
-                            [TPDisplayDB].[dbo].[Diplay_Order] D
+                            [dbo].[Diplay_Order] D
                             JOIN 
                             [dbo].[Tip_ConsumationType] C ON D.Cod_Consumation = C.Cod_Consumation
                             WHERE 
