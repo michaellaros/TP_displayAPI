@@ -65,7 +65,7 @@ namespace DisplayOrder.Services
                     if (!reader.HasRows)
                     {
                         con.Close();
-                        return null;
+                        return result;
                     }
 
                     while (reader.Read())
