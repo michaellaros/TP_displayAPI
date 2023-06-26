@@ -42,20 +42,20 @@ namespace DisplayOrder.Services
             con.Open();
             List<OrderModel> result = new List<OrderModel>();
             string query = @$"SELECT 
-                            [order_id],
-                            [Json_Order],
-                            [Order_Number],
-                            [order_status],
-                            D.[insert_date],
-                            (DATEDIFF(second, D.[insert_date], GETDATE()) / 60) as result_DateMinutes,
-                            (DATEDIFF(second, D.[insert_date], GETDATE()) % 60) as result_DateSeconds,
-                            C.[Img] 
-                            FROM 
-                            [dbo].[Diplay_Order] D
-                            JOIN 
-                            [dbo].[Tip_ConsumationType] C ON D.Cod_Consumation = C.Cod_Consumation
-                            WHERE 
-                            CONVERT(date, D.[insert_date]) = CONVERT(date, GETDATE()) AND D.[order_status] < 4";
+                                [order_id],
+                                [Json_Order],
+                                [Order_Number],
+                                [order_status],
+                                D.[insert_date],
+                                (DATEDIFF(second, D.[insert_date], GETDATE()) / 60) as result_DateMinutes,
+                                (DATEDIFF(second, D.[insert_date], GETDATE()) % 60) as result_DateSeconds,
+                                C.[Img] 
+                            FROM [dbo].[Diplay_Order] D
+                            JOIN [dbo].[Tip_ConsumationType] C 
+                                ON D.Cod_Consumation = C.Cod_Consumation
+                            WHERE CONVERT(date, D.[insert_date]) = CONVERT(date, GETDATE()) 
+                                AND D.[order_status] < 4
+                            order by d.Insert_date";
             using (SqlCommand cmd = new SqlCommand(query, con))
 
             {
@@ -130,20 +130,25 @@ namespace DisplayOrder.Services
             return result;
         }
 
-        
         public int PostOrdersDB(POST_OrderModel order)  // funzione chiamata dal chiosco per scrivere gli ordini sul db del display
         {
             con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
             con.Open();
             int result;
             string query1 = @$"SELECT NEXT VALUE For [dbo].[Display_OrderSequence] as OrderNumberKiosk";
-            string query2;
+            string query2 = @$"INSERT INTO [dbo].[Diplay_Order](
+                                [Json_Order],
+                                [Order_Number],
+		                        [order_status],
+                                [Cod_Consumation])
+                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}'";
             using (SqlCommand cmd = new SqlCommand(query1, con))
 
             {
+
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    if (!reader.HasRows)
+                    if (reader.HasRows)
                     {
 
                     }
@@ -151,23 +156,24 @@ namespace DisplayOrder.Services
                     if (reader.Read())
                     {
 
-                        result = int.Parse(reader["OrderNumberKiosk"].ToString());
-                        query2 = @$"INSERT INTO [dbo].[Diplay_Order](
-                                
-                                [Json_Order],
-                                [Order_Number],
-		                        [order_status],
-                                [Cod_Consumation])
-                                SELECT N'{JsonConvert.SerializeObject(order.order)}', {result},1,'{order.Cod_Consumation}'";
+                        result = int.Parse(reader["OrderNumberKiosk"].ToString()!);
+                        //query2 = @$"INSERT INTO [dbo].[Diplay_Order](
+
+                        //        [Json_Order],
+                        //        [Order_Number],
+                        //  [order_status],
+                        //        [Cod_Consumation])
+                        //        SELECT N'{JsonConvert.SerializeObject(order.order)}', {result},1,'{order.Cod_Consumation}'";
 
                     }
                     else
                     {
-
                         throw new ArgumentException();
                     }
                 }
 
+
+                cmd.Parameters.AddWithValue("@orderNumber", result);
                 cmd.CommandText = query2;
                 cmd.ExecuteNonQuery();
 
@@ -175,5 +181,60 @@ namespace DisplayOrder.Services
             con.Close();
             return result;
         }
+
+
+        public void PostOrdersDB(POST_OrderModel order, string orderNumber)  // funzione chiamata dal chiosco per scrivere gli ordini sul db del display
+        {
+            con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
+            con.Open();
+            string query = @$"INSERT INTO [dbo].[Diplay_Order](
+                                [Json_Order],
+                                [Order_Number],
+		                        [order_status],
+                                [Cod_Consumation])
+                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}'";
+            using (SqlCommand cmd = new SqlCommand(query, con))
+            {
+                cmd.Parameters.AddWithValue("@orderNumber", orderNumber);
+
+                int rowcount = cmd.ExecuteNonQuery();
+                if (rowcount == 0) { con.Close(); throw new Exception("Couldn't insert the order!"); }
+
+            }
+            con.Close();
+        }
+
+        public void SendOrderToNav(POST_OrderModel orderModel, string orderNumber)
+        {
+            IkeaOrderModel order = new IkeaOrderModel()
+            {
+                Id = 1,//
+                TransactionId = 1,//
+                ReceiptRef = "1",
+                OrderNo = orderNumber,
+                StoreNo = 2,//
+                TableNo = "",
+                EmployeeId = "2", //
+                EmployeeName = "POS", //check
+                DateTime = DateTime.Now,
+                Status = "Pending",
+                OrderReferenceCaption = "",
+                OrderLines = orderModel.order.Select((item, index) =>
+                new OrderLine()
+                {
+                    OrderId = 1,
+                    LineNo = index * 10000,
+                    DisplayName = "", //to get in EN?
+                    Quantity = item.quantity,
+
+                }
+                ).ToList()
+            };
+        }
+
+
+
+
+
     }
 }

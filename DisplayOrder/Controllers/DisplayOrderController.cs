@@ -45,13 +45,29 @@ namespace DisplayOrder.Controllers
         }
 
         [HttpPost]
+        [Route("OrderFromNav")]
+        [ActionName("OrderFromNav")]
+        public IActionResult OrderFromNav(IkeaOrderModel order)
+        {
+            try
+            {
+                _database.PostOrdersDB(order.GetOrderModel(), order.OrderNo);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPost]
         [Route("UpdateOrder")]
         [ActionName("UpdateOrders")]
         public IActionResult UpdateOrder(UpdateRequestModel update, string language)
         {
             try
             {
-                _database.UpdateOrderDB(update,language);
+                _database.UpdateOrderDB(update, language);
                 return Ok(_database.GetOrdersDB(language));
             }
             catch (Exception ex)
