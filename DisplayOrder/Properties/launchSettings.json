@@ -29,7 +29,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iis": {
-      "applicationUrl": "http://localhost/coopdisplayorder",
+      "applicationUrl": "http://localhost/TPDisplayorderapi",
       "sslPort": 0
     },
     "iisExpress": {
