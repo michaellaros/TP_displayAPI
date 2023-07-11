@@ -71,7 +71,7 @@ namespace DisplayOrder.Services
                     while (reader.Read())
                     {
                         result.Add(new OrderModel(reader["order_id"].ToString()
-                            , int.Parse(reader["Order_Number"].ToString()),
+                            , reader["Order_Number"].ToString(),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
                             , int.Parse(reader["order_status"].ToString()),
                             reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"), int.Parse(reader["result_DateMinutes"].ToString()), int.Parse(reader["result_DateSeconds"].ToString()), reader["Img"].ToString()
@@ -82,7 +82,7 @@ namespace DisplayOrder.Services
                 List<string> itemIds = new List<string>();
                 result.ForEach(order =>
                 {
-                    order.items.ForEach(item =>
+                    order.items.Where(item => item.name == null).ToList().ForEach(item =>
                     {
 
                         itemIds.Add(item.id.ToString());
@@ -90,40 +90,50 @@ namespace DisplayOrder.Services
 
                     });
                 });
-                cmd.CommandText = $@"select i.id,isnull(it.Value,i.Name) name
+                if (itemIds.Count > 0)
+                {
+                    cmd.CommandText = $@"select i.id,isnull(it.Value,i.Name) name
                             from [TPKioskDB].dbo.RestaurantItem i
                             left join [TPKioskDB].dbo.RestaurantItemTranslation it on i.ID = it.ID_Item
 	                            and it.Language = '{language}' and it.Field ='Name' 
                             where i.ID in({string.Join(",", itemIds)})";
 
-                Dictionary<string, string> map = new Dictionary<string, string>();
+                    Dictionary<string, string> map = new Dictionary<string, string>();
 
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-
-
-                    while (reader.Read())
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        map.Add(reader["id"].ToString(), reader["name"].ToString());
-                    }
-                }
-                result.ForEach(order =>
-                {
-                    order.items.ForEach(item =>
-                    {
-                        if (map.ContainsKey(item.id.ToString()))
+
+
+                        while (reader.Read())
                         {
-                            item.name = map[item.id.ToString()];
+                            map.Add(reader["id"].ToString(), reader["name"].ToString());
                         }
-                        item.option.ForEach(option =>
+                    }
+                    result.ForEach(order =>
+                    {
+                        order.items.ForEach(item =>
                         {
-                            if (map.ContainsKey(option.id.ToString()))
+                            if (item.name != null)
                             {
-                                option.name = map[option.id.ToString()];
+                                if (map.ContainsKey(item.id.ToString()))
+                                {
+                                    item.name = map[item.id.ToString()];
+                                }
                             }
+                            item.option.ForEach(option =>
+                            {
+                                if (option.name != null)
+                                {
+                                    if (map.ContainsKey(option.id.ToString()))
+                                    {
+                                        option.name = map[option.id.ToString()];
+                                    }
+                                }
+                            });
                         });
                     });
-                });
+                }
+
 
             }
             con.Close();

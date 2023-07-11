@@ -21,6 +21,7 @@
             List<ItemModel> items = OrderLines.Select((line) => new ItemModel()
             {
                 id = int.Parse(line.ItemId),
+                name = line.DisplayName,
                 quantity = line.Quantity
             }).ToList();
             return new POST_OrderModel(items, "DI");
