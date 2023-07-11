@@ -1,6 +1,7 @@
 ﻿using DisplayOrder.Models;
 using DisplayOrder.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 namespace DisplayOrder.Controllers
 {
@@ -51,7 +52,7 @@ namespace DisplayOrder.Controllers
         {
             try
             {
-                _database.PostOrdersDB(order.GetOrderModel(), order.OrderNo);
+                _database.PostOrdersDB(order.GetOrderModel(), Regex.Replace(order.OrderNo, "[^0-9]", ""));
                 return Ok();
             }
             catch (Exception ex)

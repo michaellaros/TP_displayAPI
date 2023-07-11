@@ -183,7 +183,7 @@ namespace DisplayOrder.Services
         }
 
 
-        public void PostOrdersDB(POST_OrderModel order, string orderNumber)  // funzione chiamata dal chiosco per scrivere gli ordini sul db del display
+        public void PostOrdersDB(POST_OrderModel order, string orderNumber)  // funzione chiamata dal nav per scrivere gli ordini sul db del display
         {
             con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
             con.Open();
