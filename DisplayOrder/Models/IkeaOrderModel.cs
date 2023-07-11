@@ -24,10 +24,10 @@
                 name = line.DisplayName,
                 quantity = line.Quantity
             }).ToList();
-            return new POST_OrderModel(items, "DI");
+            return new POST_OrderModel(items, "DI", "");
         }
     }
-
+    
     public class OrderLine
     {
         public int OrderId { get; set; }

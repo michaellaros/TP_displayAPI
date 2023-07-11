@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using DisplayOrder.Models;
 using Newtonsoft.Json;
 using System.Data;
+using System.Xml.Linq;
 
 namespace DisplayOrder.Services
 {
@@ -145,16 +146,45 @@ namespace DisplayOrder.Services
             con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
             con.Open();
             int result;
+            string kioskName="";
+            string queryKioskName = $@"SELECT [Name]
+                                        FROM [TPKioskDB].[dbo].[RestaurantKiosk] where [IP] = '@ip'";
+
+            using (SqlCommand cmd = new SqlCommand(queryKioskName, con))
+            {
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+
+                    }
+
+                    if (reader.Read())
+                    {
+
+                        kioskName = reader["Name"].ToString()!;
+
+                    }
+                }
+                cmd.Parameters.AddWithValue("@ip", order.kioskIp);
+
+            }
             string query1 = @$"SELECT NEXT VALUE For [dbo].[Display_OrderSequence] as OrderNumberKiosk";
             string query2 = @$"INSERT INTO [dbo].[Diplay_Order](
                                 [Json_Order],
                                 [Order_Number],
 		                        [order_status],
-                                [Cod_Consumation])
-                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}'";
-            using (SqlCommand cmd = new SqlCommand(query1, con))
+                                [Cod_Consumation],
+                                [EmployeeId],
+                                [EmployeeName])
+                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}','@name',sco";
+
+           
+
+                    using (SqlCommand cmd = new SqlCommand(query1, con))
 
             {
+               
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -184,6 +214,7 @@ namespace DisplayOrder.Services
 
 
                 cmd.Parameters.AddWithValue("@orderNumber", result);
+                cmd.Parameters.AddWithValue("@name", kioskName);
                 cmd.CommandText = query2;
                 cmd.ExecuteNonQuery();
 
