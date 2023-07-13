@@ -113,7 +113,7 @@ namespace DisplayOrder.Services
                     {
                         order.items.ForEach(item =>
                         {
-                            if (item.name != null)
+                            if (item.name == null)
                             {
                                 if (map.ContainsKey(item.id.ToString()))
                                 {
@@ -122,7 +122,7 @@ namespace DisplayOrder.Services
                             }
                             item.option.ForEach(option =>
                             {
-                                if (option.name != null)
+                                if (option.name == null)
                                 {
                                     if (map.ContainsKey(option.id.ToString()))
                                     {
