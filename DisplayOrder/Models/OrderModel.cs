@@ -14,9 +14,11 @@ namespace DisplayOrder.Models
         public int result_DateMinutes { get; set; }
         public int result_DateSeconds { get; set; }
         public string consumation_img { get; set; }
+        public string employeeId { get; set; }
+        public string employeeName { get; set; }
 
 
-        public OrderModel(string order_id, string orderNumber, List<ItemModel> items, int order_status, string Insert_date, int result_DateMinutes, int result_DateSeconds, string consumation_img)
+        public OrderModel(string order_id, string orderNumber, List<ItemModel> items, int order_status, string Insert_date, int result_DateMinutes, int result_DateSeconds, string consumation_img, string employeeId, string employeeName)
         {
             this.order_id = order_id;
             this.orderNumber = orderNumber;
@@ -27,7 +29,8 @@ namespace DisplayOrder.Models
             this.result_DateSeconds = result_DateSeconds;
 
             this.consumation_img = consumation_img;
-
+            this.employeeId = employeeId;
+            this.employeeName = employeeName;
         }
     }
 }

@@ -50,7 +50,9 @@ namespace DisplayOrder.Services
                                 D.[insert_date],
                                 (DATEDIFF(second, D.[insert_date], GETDATE()) / 60) as result_DateMinutes,
                                 (DATEDIFF(second, D.[insert_date], GETDATE()) % 60) as result_DateSeconds,
-                                C.[Img] 
+                                C.[Img],
+                                [EmployeeId],
+                                [EmployeeName]
                             FROM [dbo].[Diplay_Order] D
                             JOIN [dbo].[Tip_ConsumationType] C 
                                 ON D.Cod_Consumation = C.Cod_Consumation
@@ -75,7 +77,12 @@ namespace DisplayOrder.Services
                             , reader["Order_Number"].ToString(),
                             JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
                             , int.Parse(reader["order_status"].ToString()),
-                            reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"), int.Parse(reader["result_DateMinutes"].ToString()), int.Parse(reader["result_DateSeconds"].ToString()), reader["Img"].ToString()
+                            reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"),
+                            int.Parse(reader["result_DateMinutes"].ToString()),
+                            int.Parse(reader["result_DateSeconds"].ToString()),
+                            reader["Img"].ToString(),
+                            reader["EmployeeId"].ToString(),
+                            reader["EmployeeName"].ToString()
                             ));
                     }
                 }
