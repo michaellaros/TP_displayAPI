@@ -146,29 +146,6 @@ namespace DisplayOrder.Services
             con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring"));
             con.Open();
             int result;
-            string kioskName="";
-            string queryKioskName = $@"SELECT [Name]
-                                        FROM [TPKioskDB].[dbo].[RestaurantKiosk] where [IP] = '@ip'";
-
-            using (SqlCommand cmd = new SqlCommand(queryKioskName, con))
-            {
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.HasRows)
-                    {
-
-                    }
-
-                    if (reader.Read())
-                    {
-
-                        kioskName = reader["Name"].ToString()!;
-
-                    }
-                }
-                cmd.Parameters.AddWithValue("@ip", order.kioskIp);
-
-            }
             string query1 = @$"SELECT NEXT VALUE For [dbo].[Display_OrderSequence] as OrderNumberKiosk";
             string query2 = @$"INSERT INTO [dbo].[Diplay_Order](
                                 [Json_Order],
@@ -177,11 +154,11 @@ namespace DisplayOrder.Services
                                 [Cod_Consumation],
                                 [EmployeeId],
                                 [EmployeeName])
-                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}','@name',sco";
+                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}',@id,'SCO'";
 
            
 
-                    using (SqlCommand cmd = new SqlCommand(query1, con))
+            using (SqlCommand cmd = new SqlCommand(query1, con))
 
             {
                
@@ -210,11 +187,13 @@ namespace DisplayOrder.Services
                     {
                         throw new ArgumentException();
                     }
+
                 }
 
 
                 cmd.Parameters.AddWithValue("@orderNumber", result);
-                cmd.Parameters.AddWithValue("@name", kioskName);
+                cmd.Parameters.AddWithValue("@id", order.kioskId);
+
                 cmd.CommandText = query2;
                 cmd.ExecuteNonQuery();
 
@@ -232,11 +211,14 @@ namespace DisplayOrder.Services
                                 [Json_Order],
                                 [Order_Number],
 		                        [order_status],
-                                [Cod_Consumation])
-                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}'";
+                                [Cod_Consumation],
+                                [EmployeeId],
+                                [EmployeeName])
+                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}',@id,'POS'";
             using (SqlCommand cmd = new SqlCommand(query, con))
             {
                 cmd.Parameters.AddWithValue("@orderNumber", orderNumber);
+                cmd.Parameters.AddWithValue("@id", order.kioskId);
 
                 int rowcount = cmd.ExecuteNonQuery();
                 if (rowcount == 0) { con.Close(); throw new Exception("Couldn't insert the order!"); }

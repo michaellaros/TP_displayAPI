@@ -24,7 +24,7 @@
                 name = line.DisplayName,
                 quantity = line.Quantity
             }).ToList();
-            return new POST_OrderModel(items, "DI", "");
+            return  new  POST_OrderModel(){ order = items, Cod_Consumation= "DI", kioskId= EmployeeId };
         }
     }
     
