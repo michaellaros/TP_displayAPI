@@ -3,7 +3,6 @@ using System.Data.SqlClient;
 using DisplayOrder.Models;
 using Newtonsoft.Json;
 using System.Data;
-using System.Xml.Linq;
 
 namespace DisplayOrder.Services
 {
@@ -163,12 +162,12 @@ namespace DisplayOrder.Services
                                 [EmployeeName])
                                 SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}',@id,'SCO'";
 
-           
+
 
             using (SqlCommand cmd = new SqlCommand(query1, con))
 
             {
-               
+
 
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
@@ -221,11 +220,12 @@ namespace DisplayOrder.Services
                                 [Cod_Consumation],
                                 [EmployeeId],
                                 [EmployeeName])
-                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}',@id,'POS'";
+                                SELECT @json, @orderNumber,1,'{order.Cod_Consumation}',@id,'POS'";
             using (SqlCommand cmd = new SqlCommand(query, con))
             {
                 cmd.Parameters.AddWithValue("@orderNumber", orderNumber);
                 cmd.Parameters.AddWithValue("@id", order.kioskId);
+                cmd.Parameters.AddWithValue("@json", JsonConvert.SerializeObject(order.order));
 
                 int rowcount = cmd.ExecuteNonQuery();
                 if (rowcount == 0) { con.Close(); throw new Exception("Couldn't insert the order!"); }
