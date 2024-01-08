@@ -80,16 +80,17 @@ namespace DisplayOrder.Services
 
                             while (reader.Read())
                             {
-                                result.Add(new OrderModel(reader["order_id"].ToString()
-                                    , reader["Order_Number"].ToString(),
-                                    JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString())
-                                    , int.Parse(reader["order_status"].ToString()),
+                                result.Add(new OrderModel(
+                                    reader["order_id"].ToString()!,
+                                    reader["Order_Number"].ToString()!,
+                                    JsonConvert.DeserializeObject<List<ItemModel>>(reader["Json_Order"].ToString()),
+                                    int.Parse(reader["order_status"].ToString()!),
                                     reader.GetDateTime("Insert_date").ToString("dd/MM/yyyy HH:mm:ss"),
-                                    int.Parse(reader["result_DateMinutes"].ToString()),
-                                    int.Parse(reader["result_DateSeconds"].ToString()),
-                                    reader["Img"].ToString(),
-                                    reader["EmployeeId"].ToString(),
-                                    reader["EmployeeName"].ToString()
+                                    int.Parse(reader["result_DateMinutes"].ToString()!),
+                                    int.Parse(reader["result_DateSeconds"].ToString()!),
+                                    reader["Img"].ToString()!,
+                                    reader["EmployeeId"].ToString()!,
+                                    reader["EmployeeName"].ToString()!
                                     ));
                             }
                         }
@@ -121,29 +122,25 @@ namespace DisplayOrder.Services
 
                                 while (reader.Read())
                                 {
-                                    map.Add(reader["id"].ToString(), reader["name"].ToString());
+                                    map.Add(reader["id"].ToString()!,
+                                        reader["name"].ToString()!);
                                 }
                             }
                             result.ForEach(order =>
                             {
                                 order.items.ForEach(item =>
                                 {
-                                    if (item.name == null)
-                                    {
                                         if (map.ContainsKey(item.id.ToString()))
                                         {
                                             item.name = map[item.id.ToString()];
                                         }
-                                    }
                                     item.option.ForEach(option =>
                                     {
-                                        if (option.name == null)
-                                        {
                                             if (map.ContainsKey(option.id.ToString()))
                                             {
                                                 option.name = map[option.id.ToString()];
                                             }
-                                        }
+                                        
                                     });
                                 });
                             });
