@@ -130,17 +130,17 @@ namespace DisplayOrder.Services
                             {
                                 order.items.ForEach(item =>
                                 {
-                                        if (map.ContainsKey(item.id.ToString()))
-                                        {
-                                            item.name = map[item.id.ToString()];
-                                        }
+                                    if (map.ContainsKey(item.id.ToString()))
+                                    {
+                                        item.name = map[item.id.ToString()];
+                                    }
                                     item.option.ForEach(option =>
                                     {
-                                            if (map.ContainsKey(option.id.ToString()))
-                                            {
-                                                option.name = map[option.id.ToString()];
-                                            }
-                                        
+                                        if (map.ContainsKey(option.id.ToString()))
+                                        {
+                                            option.name = map[option.id.ToString()];
+                                        }
+
                                     });
                                 });
                             });
