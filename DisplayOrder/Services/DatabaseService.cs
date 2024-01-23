@@ -3,13 +3,15 @@ using System.Data.SqlClient;
 using DisplayOrder.Models;
 using Newtonsoft.Json;
 using System.Data;
+using NLog;
 
 namespace DisplayOrder.Services
 {
     public class DatabaseService : IDatabaseService
     {
-        private SqlConnection con { get; set; }
+
         private IConfiguration _configuration { get; set; }
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
         public DatabaseService(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -17,7 +19,7 @@ namespace DisplayOrder.Services
 
         public void UpdateOrderDB(UpdateRequestModel update, string language)
         {
-            using (con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
+            using (SqlConnection con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
             {
                 try
                 {
@@ -33,16 +35,19 @@ namespace DisplayOrder.Services
                         cmd.ExecuteNonQuery();
                     }
                 }
-                finally
+                catch (Exception e)
                 {
+                    logger.Error($"UpdateOrderDB error: {e.Message}");
                     con.Close();
+                    throw;
+
                 }
 
             }
         }
         public List<OrderModel> GetOrdersDB(string language)
         {
-            using (con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
+            using (SqlConnection con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
             {
                 List<OrderModel> result = new List<OrderModel>();
                 try
@@ -67,7 +72,6 @@ namespace DisplayOrder.Services
                                 AND D.[order_status] < 4
                             order by d.Insert_date";
                     using (SqlCommand cmd = new SqlCommand(query, con))
-
                     {
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
@@ -151,19 +155,23 @@ namespace DisplayOrder.Services
 
 
                     }
-                }
-                finally
-                {
                     con.Close();
+                    return result;
                 }
-                return result;
+                catch (Exception e)
+                {
+                    logger.Error($"GetOrdersDB error: {e.Message}");
+                    con.Close();
+                    throw;
+
+                }
             }
 
         }
 
         public int PostOrdersDB(POST_OrderModel order)  // funzione chiamata dal chiosco per scrivere gli ordini sul db del display
         {
-            using (con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
+            using (SqlConnection con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
             {
                 int result;
 
@@ -171,74 +179,75 @@ namespace DisplayOrder.Services
                 {
                     con.Open();
 
-                    string query1 = @$"SELECT NEXT VALUE For [dbo].[Display_OrderSequence] as OrderNumberKiosk";
-                    string query2 = @$"INSERT INTO [dbo].[Diplay_Order](
-                                [Json_Order],
-                                [Order_Number],
-		                        [order_status],
-                                [Cod_Consumation],
-                                [EmployeeId],
-                                [EmployeeName])
-                                SELECT N'{JsonConvert.SerializeObject(order.order)}', @orderNumber,1,'{order.Cod_Consumation}',@id,'SCO'";
+                    //string query1 = @$"SELECT NEXT VALUE For [dbo].[Display_OrderSequence] as OrderNumberKiosk";
+                    string query = @$"INSERT INTO [dbo].[Diplay_Order](
+                                            [Json_Order],
+                                            [Order_Number],
+		                                    [order_status],
+                                            [Cod_Consumation],
+                                            [EmployeeId],
+                                            [EmployeeName])
+                                        output INSERTED.Order_Number
+                                    values
+                                            (@order, cast (NEXT VALUE For [dbo].[Display_OrderSequence] as INT),1,@cod_consumation,@id,'SCO')";
 
 
 
-                    using (SqlCommand cmd = new SqlCommand(query1, con))
+                    using (SqlCommand cmd = new SqlCommand(query, con))
 
                     {
 
 
-                        using (SqlDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                            {
-
-                            }
-
-                            if (reader.Read())
-                            {
-
-                                result = int.Parse(reader["OrderNumberKiosk"].ToString()!);
-                                //query2 = @$"INSERT INTO [dbo].[Diplay_Order](
-
-                                //        [Json_Order],
-                                //        [Order_Number],
-                                //  [order_status],
-                                //        [Cod_Consumation])
-                                //        SELECT N'{JsonConvert.SerializeObject(order.order)}', {result},1,'{order.Cod_Consumation}'";
-
-                            }
-                            else
-                            {
-                                throw new ArgumentException();
-                            }
-
-                        }
+                        //using (SqlDataReader reader = cmd.ExecuteReader())
+                        //{
 
 
-                        cmd.Parameters.AddWithValue("@orderNumber", result);
+                        //        result = int.Parse(reader["OrderNumberKiosk"].ToString()!);
+                        //        //query2 = @$"INSERT INTO [dbo].[Diplay_Order](
+
+                        //        //        [Json_Order],
+                        //        //        [Order_Number],
+                        //        //  [order_status],
+                        //        //        [Cod_Consumation])
+                        //        //        SELECT N'{JsonConvert.SerializeObject(order.order)}', {result},1,'{order.Cod_Consumation}'";
+
+                        //    }
+                        //    else
+                        //    {
+                        //        throw new ArgumentException();
+                        //    }
+
+                        //}
+
+
+                        cmd.Parameters.AddWithValue("@order", JsonConvert.SerializeObject(order.order));
+                        cmd.Parameters.AddWithValue("@cod_consumation", order.Cod_Consumation);
                         cmd.Parameters.AddWithValue("@id", order.kioskId);
 
-                        cmd.CommandText = query2;
-                        cmd.ExecuteNonQuery();
+                        var orderNumber = cmd.ExecuteScalar();
+                        if (orderNumber == null) { con.Close(); throw new Exception("Couldn't insert the new order!"); }
+                        result = int.Parse(orderNumber.ToString());
 
                     }
-
-
-
-                }
-                finally
-                {
                     con.Close();
+                    return result;
+
+
                 }
-                return result;
+                catch (Exception e)
+                {
+                    logger.Error($"PostOrdersDB kiosk error: {e.Message}");
+                    con.Close();
+                    throw;
+
+                }
             }
         }
 
 
         public void PostOrdersDB(POST_OrderModel order, string orderNumber)  // funzione chiamata dal nav per scrivere gli ordini sul db del display
         {
-            using (con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
+            using (SqlConnection con = new SqlConnection(_configuration.GetSection("appsettings").GetValue<string>("connectionstring")))
             {
                 try
                 {
@@ -261,11 +270,16 @@ namespace DisplayOrder.Services
                         if (rowcount == 0) { con.Close(); throw new Exception("Couldn't insert the order!"); }
 
                     }
-                }
-                finally
-                {
                     con.Close();
                 }
+                catch (Exception e)
+                {
+                    logger.Error($"PostOrdersDB nav error: {e.Message}");
+                    con.Close();
+                    throw;
+
+                }
+
             }
         }
 
